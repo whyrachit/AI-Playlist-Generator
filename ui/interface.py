@@ -1,14 +1,9 @@
 import streamlit as st
 
-def display_interface():
+def inject_custom_css():
     """
-    Renders the Spotify-inspired UI for the Spotify Playlist Generator.
-    It collects the user's prompt.
-    
-    Returns:
-        user_prompt (str): The prompt entered by the user.
+    Injects custom CSS for a Spotify-like UI globally.
     """
-    # Inject custom CSS for a Spotify-like UI.
     st.markdown("""
     <style>
         .stApp {
@@ -37,12 +32,19 @@ def display_interface():
     </style>
     """, unsafe_allow_html=True)
 
-    # Display the Spotify logo.
     st.markdown(
         '<img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" class="spotify-logo">',
         unsafe_allow_html=True
     )
 
+def display_interface():
+    """
+    Renders the Spotify-inspired UI for the Spotify Playlist Generator.
+    It collects the user's prompt.
+    
+    Returns:
+        user_prompt (str): The prompt entered by the user.
+    """
     st.title("Spotify Playlist Generator")
     st.write("Enter a prompt describing the playlist you want to generate.")
 
