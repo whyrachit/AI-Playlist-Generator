@@ -7,3 +7,4 @@ groq
 googlesearch-python 
 pycountry
 httpcore
+google-genai
