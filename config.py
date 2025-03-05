@@ -12,7 +12,6 @@ try:
     SPOTIFY_CLIENT_ID = st.secrets.spotify.client_id
     SPOTIFY_CLIENT_SECRET = st.secrets.spotify.client_secret
     SPOTIFY_REDIRECT_URI = st.secrets.spotify.redirect_uri
-    AGNO_API_KEY = st.secrets.agno.api_key  # Adjust the section names as needed.
     GEMINI_API_KEY = st.secrets.gemini.api_key
     logger.info("Loaded API credentials from Streamlit secrets")
 except ImportError:
@@ -22,7 +21,6 @@ except ImportError:
     SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
     SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
     SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI")
-    AGNO_API_KEY = os.getenv("AGNO_API_KEY")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     logger.info("Loaded API credentials from environment variables (.env)")
 
