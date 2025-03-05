@@ -1,8 +1,9 @@
-# Dependencies
 streamlit
 spotipy
 requests
 python-dotenv
-# The following packages are assumed to be available for Agno's agent framework and Groq R1 model integration.
 agno
 groq
+googlesearch-python 
+pycountry
+httpcore

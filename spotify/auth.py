@@ -28,6 +28,10 @@ def show_login_button():
     st.markdown(button_html, unsafe_allow_html=True)
 
 def spotify_authenticate():
+    """
+    Handles the Spotify authentication flow using OAuth2.
+    Returns an authenticated Spotipy client or None if authentication fails.
+    """
     scope = "playlist-modify-private playlist-modify-public user-read-private user-read-email"
     
     if 'sp_oauth' not in st.session_state:
@@ -37,7 +41,7 @@ def spotify_authenticate():
             redirect_uri=SPOTIFY_REDIRECT_URI,
             scope=scope,
             cache_path=".spotifycache",
-            show_dialog=True  # Forces user to re-authenticate
+            show_dialog=True
         )
 
     # Add token validation check

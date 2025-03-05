@@ -1,72 +1,88 @@
-"""
-prompt_processor.py - Agent logic for processing user prompts using Agno and Groq's model.
-
-This module defines a function that leverages Agno’s agent framework with the Groq model
-to extract details from the user's natural language prompt and generate an initial list of 
-song recommendations in JSON format.
-"""
-
 import json
 import re
 from agno.agent import Agent
 from agno.models.groq import Groq
+from agno.tools.googlesearch import GoogleSearchTools
 from config import GROQ_API_KEY
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def extract_json(raw_text: str) -> str:
     """
-    Extracts a JSON array from the raw_text using a regex pattern.
-    
-    Args:
-        raw_text (str): The raw text output from the agent.
-    
-    Returns:
-        str: The extracted JSON string, or an empty string if no JSON array is found.
+    Extract a JSON array from raw_text. If multiple arrays are present,
+    choose the one that seems most complete. Fallback to empty array if extraction fails.
     """
-    match = re.search(r'(\[.*\])', raw_text, re.DOTALL)
-    if match:
-        return match.group(1).strip()
-    return ""
+    try:
+        matches = re.findall(r'(\[.*\])', raw_text, re.DOTALL)
+        if matches:
+            # Optionally, choose the longest match assuming that is the complete JSON.
+            best_match = max(matches, key=len)
+            return best_match.strip()
+        return "[]"
+    except Exception as e:
+        logger.error(f"Error extracting JSON: {e}")
+        return "[]"
 
 def process_prompt(user_prompt: str):
     """
-    Processes the user's prompt using Agno's agent framework with Groq's model.
-    
-    The agent is tasked to act as a professional music playlist curator. It extracts relevant details
-    from the prompt and returns a list of 30 song recommendations. Each recommendation is expected to be 
-    a JSON object with exactly two keys: "name" and "artist". The output must be a valid JSON array and 
-    nothing else.
-    
-    Args:
-        user_prompt (str): The natural language prompt entered by the user.
-    
-    Returns:
-        list: A list of song recommendation dictionaries. Returns an empty list if parsing fails.
+    Processes the user prompt to generate a playlist recommendation.
+    This function uses an LLM (with Google search integration for context) to extract structured song data.
     """
-    description = ("""
-        You are a professional music playlist curator with a deep understanding of diverse genres, eras, and moods. 
-        Your task is to create a curated list of 30 unique song recommendations (if feasible) based on the provided prompt. 
-        Each song should be thoughtfully selected to ensure a well-balanced and engaging playlist that appeals to a wide range of musical tastes.
-        Your output must be a JSON array where each element is a JSON object containing exactly two keys:
-        "name": A string representing the title of the song.
-        "artist": A string representing the performing artist's name.
-        Do not include any extra keys or fields beyond "name" and "artist".
-        Return only the JSON array without any additional text, explanations, or formatting tags.
-        Based on the given prompt, generate your list of 30 song recommendations strictly following these instructions.
-    """)
+    description = """
+    You are an expert music curator with deep knowledge across all genres and eras.
+    Create a carefully curated playlist of 15-20 songs that perfectly match the user's prompt.
+
+    Important guidelines:
+    1. Focus on song diversity and flow.
+    2. Include both popular and lesser-known tracks.
+    3. Ensure genre consistency.
+    4. Consider the emotional context.
+
+    For each song, provide:
+    - "name": Exact song title.
+    - "artist": Primary artist name.
+
+    Do not provide Spotify IDs; the backend will use Spotify's API to retrieve the official track IDs.
     
-    # Initialize the agent with the Groq model. (Replace with your Groq API key if needed.)
-    agent = Agent(
-        model=Groq(api_key=GROQ_API_KEY, id="deepseek-r1-distill-llama-70b"),
-        description=description,
-        markdown=True
-    )
-    
-    response = agent.run(user_prompt)
-    json_text = extract_json(response.content)
-    
+    Return only a valid JSON array with these exact fields.
+    """
+
     try:
-        recommendations = json.loads(json_text)
-    except json.JSONDecodeError:
-        recommendations = []
-    
-    return recommendations
+        # Initialize agent with enhanced configuration.
+        agent = Agent(
+            model=Groq(
+                api_key=GROQ_API_KEY,
+                id="deepseek-r1-distill-llama-70b",
+                temperature=0.7,  # Balancing creativity and relevance.
+                max_tokens=2000   # Provide enough context for detailed responses.
+            ),
+            tools=[GoogleSearchTools()],
+            description=description,
+            markdown=True
+        )
+
+        enhanced_prompt = f"""
+        Create a cohesive playlist based on this request: "{user_prompt}"
+        Consider:
+        - Musical progression
+        - Mood transitions
+        - Artist variety
+        - Genre authenticity
+        """
+        response = agent.run(enhanced_prompt)
+        json_text = extract_json(response.content)
+        try:
+            recommendations = json.loads(json_text)
+            if not recommendations:
+                logger.warning("No recommendations extracted, consider refining the prompt.")
+            else:
+                logger.info(f"Generated {len(recommendations)} song recommendations")
+            return recommendations
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {e}\nResponse Content: {json_text}")
+            return []
+    except Exception as e:
+        logger.error(f"Error in prompt processing: {e}")
+        return []
