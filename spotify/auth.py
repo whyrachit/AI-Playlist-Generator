@@ -59,17 +59,16 @@ def spotify_authenticate():
             st.session_state.pop('token_info', None)
             st.experimental_rerun()
 
-    # Use st.query_params to retrieve query parameters (replacement for deprecated experimental_get_query_params)
+    # Retrieve query parameters using st.query_params (read-only)
     query_params = st.query_params
     code = query_params.get("code")
 
-    # If we have a code, process it.
-    if code:
+    # If we have a code and it hasn't been processed yet, process it.
+    if code and "code_processed" not in st.session_state:
         try:
-            st.experimental_set_query_params()  # Clear query parameters
-            # Get access token using the provided code.
             token_info = st.session_state.sp_oauth.get_access_token(code)
             st.session_state.token_info = token_info
+            st.session_state.code_processed = True
             st.experimental_rerun()
         except Exception as e:
             st.error(f"Authentication failed: {str(e)}")
