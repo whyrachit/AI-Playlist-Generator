@@ -1,3 +1,4 @@
+import uuid  # Added to generate unique cache file names per session
 import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -34,13 +35,18 @@ def spotify_authenticate():
     """
     scope = "playlist-modify-private playlist-modify-public user-read-private user-read-email"
     
+    # --- Change: Use a unique cache file per session ---
+    if 'spotify_cache_path' not in st.session_state:
+        st.session_state.spotify_cache_path = f".spotifycache-{uuid.uuid4()}"
+    # -------------------------------------------------------
+
     if 'sp_oauth' not in st.session_state:
         st.session_state.sp_oauth = SpotifyOAuth(
             client_id=SPOTIFY_CLIENT_ID,
             client_secret=SPOTIFY_CLIENT_SECRET,
             redirect_uri=SPOTIFY_REDIRECT_URI,
             scope=scope,
-            cache_path=".spotifycache",
+            cache_path=st.session_state.spotify_cache_path,  # Use the unique cache path
             show_dialog=True
         )
 
@@ -51,22 +57,22 @@ def spotify_authenticate():
             sp.current_user()  # Test authentication
         except Exception:
             st.session_state.pop('token_info', None)
-            st.rerun()
+            st.experimental_rerun()
 
-    # Check for authorization code in query params
-    query_params = st.query_params
+    # Check for authorization code in query params using the stable API functions.
+    query_params = st.get_query_params()
     code = query_params.get("code")
 
     # If we have a code, process it
     if code:
         try:
-            # Clear query params immediately
-            st.query_params.clear()
+            # Clear query params immediately using the new function.
+            st.set_query_params()
             
-            # Get access token
+            # Get access token using the provided code
             token_info = st.session_state.sp_oauth.get_access_token(code)
             st.session_state.token_info = token_info
-            st.rerun()
+            st.experimental_rerun()
         except Exception as e:
             st.error(f"Authentication failed: {str(e)}")
             st.session_state.pop("token_info", None)
@@ -80,7 +86,7 @@ def spotify_authenticate():
         show_login_button()
         return None
     
-    # Check token expiration
+    # Check token expiration and refresh if needed
     if st.session_state.sp_oauth.is_token_expired(token_info):
         try:
             token_info = st.session_state.sp_oauth.refresh_access_token(
