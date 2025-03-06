@@ -3,8 +3,5 @@ spotipy
 requests
 python-dotenv
 agno
-groq
 googlesearch-python 
-pycountry
-httpcore
 google-genai
