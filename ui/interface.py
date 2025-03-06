@@ -141,8 +141,7 @@ def display_interface():
         user_prompt = st.text_area(
             "🎧 Describe Your Perfect Playlist",
             placeholder=(
-                "Example: Create a chill evening playlist with indie folk and acoustic songs, "
-                "similar to artists like Bon Iver and Fleet Foxes, perfect for relaxing with a book"
+                "Example: CI am very sad as I did not get selected into Reyansh College of Hotel Management"
             ),
             help="Be specific about the mood, genres, and artists you like",
             height=100
