@@ -1,4 +1,4 @@
-import uuid  # Added to generate unique cache file names per session
+import uuid  # To generate unique cache file names per session
 import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -9,7 +9,7 @@ def show_login_button():
     if 'sp_oauth' not in st.session_state:
         st.error("OAuth client not initialized")
         return
-    
+
     auth_url = st.session_state.sp_oauth.get_authorize_url()
     button_html = f"""
     <a href="{auth_url}">
@@ -59,17 +59,22 @@ def spotify_authenticate():
             st.session_state.pop('token_info', None)
             st.experimental_rerun()
 
-    # Check for authorization code in query params using the stable API functions.
-    query_params = st.get_query_params()
+    # Handle query parameters using new stable API if available, else fallback to experimental functions.
+    if hasattr(st, "get_query_params"):
+        query_params = st.get_query_params()
+    else:
+        query_params = st.experimental_get_query_params()
+
     code = query_params.get("code")
 
-    # If we have a code, process it
+    # If we have a code, process it.
     if code:
         try:
-            # Clear query params immediately using the new function.
-            st.set_query_params()
-            
-            # Get access token using the provided code
+            if hasattr(st, "set_query_params"):
+                st.set_query_params()
+            else:
+                st.experimental_set_query_params()
+            # Get access token using the provided code.
             token_info = st.session_state.sp_oauth.get_access_token(code)
             st.session_state.token_info = token_info
             st.experimental_rerun()
@@ -78,15 +83,15 @@ def spotify_authenticate():
             st.session_state.pop("token_info", None)
             return None
 
-    # Check existing token
+    # Check existing token.
     token_info = st.session_state.get("token_info")
-    
-    # If no token, show login button
+
+    # If no token, show login button.
     if not token_info:
         show_login_button()
         return None
-    
-    # Check token expiration and refresh if needed
+
+    # Check token expiration and refresh if needed.
     if st.session_state.sp_oauth.is_token_expired(token_info):
         try:
             token_info = st.session_state.sp_oauth.refresh_access_token(
