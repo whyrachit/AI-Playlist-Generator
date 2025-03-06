@@ -35,10 +35,9 @@ def spotify_authenticate():
     """
     scope = "playlist-modify-private playlist-modify-public user-read-private user-read-email"
     
-    # --- Change: Use a unique cache file per session ---
+    # Use a unique cache file per session.
     if 'spotify_cache_path' not in st.session_state:
         st.session_state.spotify_cache_path = f".spotifycache-{uuid.uuid4()}"
-    # -------------------------------------------------------
 
     if 'sp_oauth' not in st.session_state:
         st.session_state.sp_oauth = SpotifyOAuth(
@@ -50,7 +49,7 @@ def spotify_authenticate():
             show_dialog=True
         )
 
-    # Add token validation check
+    # Validate existing token if present.
     if 'token_info' in st.session_state:
         try:
             sp = spotipy.Spotify(auth=st.session_state.token_info['access_token'])
@@ -59,15 +58,13 @@ def spotify_authenticate():
             st.session_state.pop('token_info', None)
             st.experimental_rerun()
 
-    # Use the new stable functions for query parameter handling.
+    # Retrieve query parameters using the stable API.
     query_params = st.query_params
     code = query_params.get("code")
 
-    # If we have a code, process it.
-    if code:
+    # Process the code only if we don't have a token yet.
+    if code and "token_info" not in st.session_state:
         try:
-            st.set_query_params()  # Clear query parameters
-            # Get access token using the provided code.
             token_info = st.session_state.sp_oauth.get_access_token(code)
             st.session_state.token_info = token_info
             st.experimental_rerun()
@@ -78,13 +75,13 @@ def spotify_authenticate():
 
     # Check existing token.
     token_info = st.session_state.get("token_info")
-
-    # If no token, show login button.
+    
+    # If no token exists, show the login button.
     if not token_info:
         show_login_button()
         return None
 
-    # Check token expiration and refresh if needed.
+    # Refresh token if expired.
     if st.session_state.sp_oauth.is_token_expired(token_info):
         try:
             token_info = st.session_state.sp_oauth.refresh_access_token(
