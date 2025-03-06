@@ -59,21 +59,14 @@ def spotify_authenticate():
             st.session_state.pop('token_info', None)
             st.experimental_rerun()
 
-    # Handle query parameters using new stable API if available, else fallback to experimental functions.
-    if hasattr(st, "get_query_params"):
-        query_params = st.get_query_params()
-    else:
-        query_params = st.experimental_get_query_params()
-
+    # Use the new stable functions for query parameter handling.
+    query_params = st.query_params
     code = query_params.get("code")
 
     # If we have a code, process it.
     if code:
         try:
-            if hasattr(st, "set_query_params"):
-                st.set_query_params()
-            else:
-                st.experimental_set_query_params()
+            st.set_query_params()  # Clear query parameters
             # Get access token using the provided code.
             token_info = st.session_state.sp_oauth.get_access_token(code)
             st.session_state.token_info = token_info
