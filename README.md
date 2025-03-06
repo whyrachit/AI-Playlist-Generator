@@ -65,7 +65,7 @@ GEMINI_API_KEY=your_gemini_api_key
 
 The application will load these credentials at runtime.
 
-##Running the App
+## Running the App
 
 Launch the Streamlit app by running:
 
@@ -74,7 +74,7 @@ streamlit run app.py
 ```
 Then, open your browser and navigate to the localhost URL provided in the terminal.
 
-##Folder Structure
+## Folder Structure
 
 ```graphql
 spotify-playlist-generator/
@@ -94,7 +94,7 @@ spotify-playlist-generator/
 └── README.md                    # This file
 ```
 
-##How It Works
+## How It Works
 
 User Input:
 
@@ -109,15 +109,15 @@ User Experience:
 
 The UI, designed in interface.py, provides options to generate, preview, and save the playlist, all within an engaging, modern interface.
 
-##Contributing
+## Contributing
 
 Contributions are welcome! If you have suggestions, bug reports, or feature requests, please open an issue or submit a pull request.
 
-##License
+## License
 
 This project is licensed under the MIT License.
 
-##Acknowledgements
+## Acknowledgements
 
 Built with Streamlit
 Integrated with the Spotify API via Spotipy
