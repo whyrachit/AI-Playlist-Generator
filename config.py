@@ -8,14 +8,15 @@ logger = logging.getLogger(__name__)
 # otherwise fallback to using environment variables loaded via .env.
 try:
     import streamlit as st
-    # If running in a Streamlit environment, use st.secrets.
-    SPOTIFY_CLIENT_ID = st.secrets.spotify.client_id
-    SPOTIFY_CLIENT_SECRET = st.secrets.spotify.client_secret
-    SPOTIFY_REDIRECT_URI = st.secrets.spotify.redirect_uri
-    GEMINI_API_KEY = st.secrets.gemini.api_key
+    SPOTIFY_CLIENT_ID = st.secrets["client_id"]
+    SPOTIFY_CLIENT_SECRET = st.secrets["client_secret"]
+    SPOTIFY_REDIRECT_URI = st.secrets["redirect_uri"]
+    GEMINI_API_KEY = st.secrets["api_key"]
     logger.info("Loaded API credentials from Streamlit secrets")
-except ImportError:
-    # Fallback: load environment variables from a .env file.
+except (ImportError, KeyError) as e:
+    # Log the actual error for debugging
+    logger.warning(f"Failed to load secrets from Streamlit: {e}")
+    # Fallback: load from .env file.
     from dotenv import load_dotenv
     load_dotenv()
     SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
