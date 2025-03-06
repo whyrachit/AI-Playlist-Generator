@@ -141,7 +141,7 @@ def display_interface():
         user_prompt = st.text_area(
             "🎧 Describe Your Perfect Playlist",
             placeholder=(
-                "Example: CI am very sad as I did not get selected into Reyansh College of Hotel Management"
+                "Example: I am very sad as I did not get selected into Reyansh College of Hotel Management"
             ),
             help="Be specific about the mood, genres, and artists you like",
             height=100
