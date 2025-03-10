@@ -3,6 +3,7 @@ spotipy
 requests
 python-dotenv
 agno
+openai
 googlesearch-python 
 google-genai
 pycountry
